@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright (c) 2014-present, Facebook, Inc. All rights reserved.
  *
@@ -29,7 +30,8 @@ use FacebookAds\Http\ResponseInterface;
 use FacebookAds\Http\Util;
 use FacebookAds\Object\AbstractObject;
 
-class Cursor implements \Iterator, \Countable, \ArrayAccess {
+class Cursor implements \Iterator, \Countable, \ArrayAccess
+{
   /**
    * @var ResponseInterface
    */
@@ -78,7 +80,8 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess {
   public function __construct(
     ResponseInterface $response,
     AbstractObject $object_prototype,
-    Api $api = null) {
+    Api $api = null
+  ) {
     $this->response = $response;
     $this->objectPrototype = $object_prototype;
     $this->api = $api !== null ? $api : Api::instance();
@@ -89,7 +92,8 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess {
    * @param array $object_data
    * @return AbstractObject
    */
-  protected function createObject(array $object_data) {
+  protected function createObject(array $object_data)
+  {
     $object = clone $this->objectPrototype;
     $object->setDataWithoutValidation($object_data);
     if ($object instanceof AbstractCrudObject) {
@@ -103,7 +107,8 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess {
    * @return array
    * @throws \InvalidArgumentException
    */
-  protected function assureResponseData(ResponseInterface $response) {
+  protected function assureResponseData(ResponseInterface $response)
+  {
     $content = $response->getContent();
 
     // First, check if the content contains data
@@ -137,11 +142,13 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess {
           continue;
         }
 
-        if ($value !== null &&
-            $this->isJsonObject($value) &&
-            isset($value['id']) &&
-            $value['id'] !== null &&
-            $value['id'] === $key) {
+        if (
+          $value !== null &&
+          $this->isJsonObject($value) &&
+          isset($value['id']) &&
+          $value['id'] !== null &&
+          $value['id'] === $key
+        ) {
           $objects[] = $value;
         } else {
           $is_id_indexed_array = false;
@@ -158,7 +165,8 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess {
     throw new \InvalidArgumentException("Malformed response data");
   }
 
-  private function isJsonObject($object) {
+  private function isJsonObject($object)
+  {
     if (!is_array($object)) {
       return false;
     }
@@ -175,7 +183,8 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess {
   /**
    * @param ResponseInterface $response
    */
-  protected function prependResponse(ResponseInterface $response) {
+  protected function prependResponse(ResponseInterface $response)
+  {
     $this->response = $response;
     $data = $this->assureResponseData($response);
     if (empty($data)) {
@@ -194,7 +203,8 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess {
   /**
    * @param ResponseInterface $response
    */
-  protected function appendResponse(ResponseInterface $response) {
+  protected function appendResponse(ResponseInterface $response)
+  {
     $this->response = $response;
     $data = $this->assureResponseData($response);
     if (empty($data)) {
@@ -217,21 +227,24 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess {
   /**
    * @return bool
    */
-  public static function getDefaultUseImplicitFetch() {
+  public static function getDefaultUseImplicitFetch()
+  {
     return static::$defaultUseImplicitFetch;
   }
 
   /**
    * @param bool $use_implicit_fetch
    */
-  public static function setDefaultUseImplicitFetch($use_implicit_fetch) {
+  public static function setDefaultUseImplicitFetch($use_implicit_fetch)
+  {
     static::$defaultUseImplicitFetch = $use_implicit_fetch;
   }
 
   /**
    * @return bool
    */
-  public function getUseImplicitFetch() {
+  public function getUseImplicitFetch()
+  {
     return $this->useImplicitFetch !== null
       ? $this->useImplicitFetch
       : static::$defaultUseImplicitFetch;
@@ -240,14 +253,16 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess {
   /**
    * @param bool $use_implicit_fetch
    */
-  public function setUseImplicitFetch($use_implicit_fetch) {
+  public function setUseImplicitFetch($use_implicit_fetch)
+  {
     $this->useImplicitFetch = $use_implicit_fetch;
   }
 
   /**
    * @return string|null
    */
-  public function getBefore() {
+  public function getBefore()
+  {
     $content = $this->getLastResponse()->getContent();
     return isset($content['paging']['cursors']['before'])
       ? $content['paging']['cursors']['before']
@@ -257,7 +272,8 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess {
   /**
    * @return string|null
    */
-  public function getAfter() {
+  public function getAfter()
+  {
     $content = $this->getLastResponse()->getContent();
     return isset($content['paging']['cursors']['after'])
       ? $content['paging']['cursors']['after']
@@ -267,7 +283,8 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess {
   /**
    * @return RequestInterface
    */
-  protected function createUndirectionalizedRequest() {
+  protected function createUndirectionalizedRequest()
+  {
     $request = $this->getLastResponse()->getRequest()->createClone();
     $params = $request->getQueryParams();
     if (isset($params['before'])) {
@@ -283,7 +300,8 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess {
   /**
    * @return string|null
    */
-  public function getPrevious() {
+  public function getPrevious()
+  {
     $content = $this->getLastResponse()->getContent();
     if (isset($content['paging']['previous'])) {
       return $content['paging']['previous'];
@@ -302,7 +320,8 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess {
   /**
    * @return string|null
    */
-  public function getNext() {
+  public function getNext()
+  {
     $content = $this->getLastResponse()->getContent();
     if (isset($content['paging']['next'])) {
       return $content['paging']['next'];
@@ -322,7 +341,8 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess {
    * @param string $url
    * @return RequestInterface
    */
-  protected function createRequestFromUrl($url) {
+  protected function createRequestFromUrl($url)
+  {
     $components = parse_url($url);
     $request = $this->getLastResponse()->getRequest()->createClone();
     $request->setDomain($components['host']);
@@ -337,7 +357,8 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess {
   /**
    * @return RequestInterface|null
    */
-  public function createBeforeRequest() {
+  public function createBeforeRequest()
+  {
     $url = $this->getPrevious();
     return $url !== null ? $this->createRequestFromUrl($url) : null;
   }
@@ -345,12 +366,14 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess {
   /**
    * @return RequestInterface|null
    */
-  public function createAfterRequest() {
+  public function createAfterRequest()
+  {
     $url = $this->getNext();
     return $url !== null ? $this->createRequestFromUrl($url) : null;
   }
 
-  public function fetchBefore() {
+  public function fetchBefore()
+  {
     $request = $this->createBeforeRequest();
     if (!$request) {
       return;
@@ -359,7 +382,8 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess {
     $this->prependResponse($request->execute());
   }
 
-  public function fetchAfter() {
+  public function fetchAfter()
+  {
     $request = $this->createAfterRequest();
     if (!$request) {
       return;
@@ -372,7 +396,8 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess {
    * @deprecated Use getArrayCopy()
    * @return AbstractObject[]
    */
-  public function getObjects() {
+  public function getObjects()
+  {
     return $this->objects;
   }
 
@@ -380,7 +405,8 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess {
    * @param bool $ksort
    * @return AbstractObject[]
    */
-  public function getArrayCopy($ksort = false) {
+  public function getArrayCopy($ksort = false)
+  {
     if ($ksort) {
       // Sort the main array to improve best case performance in future
       // invocations
@@ -394,58 +420,68 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess {
    * @deprecated Use getLastResponse()
    * @return ResponseInterface
    */
-  public function getResponse() {
+  public function getResponse()
+  {
     return $this->response;
   }
 
   /**
    * @return ResponseInterface
    */
-  public function getLastResponse() {
+  public function getLastResponse()
+  {
     return $this->response;
   }
 
   /**
    * @return int
    */
-  public function getIndexLeft() {
+  public function getIndexLeft()
+  {
     return $this->indexLeft;
   }
 
   /**
    * @return int
    */
-  public function getIndexRight() {
+  public function getIndexRight()
+  {
     return $this->indexRight;
   }
 
-  public function rewind() : void {
+  public function rewind(): void
+  {
     $this->position = $this->indexLeft;
   }
 
-  public function end() {
+  public function end()
+  {
     $this->position = $this->indexRight;
   }
 
   /**
    * @param int $position
    */
-  public function seekTo($position) {
+  public function seekTo($position)
+  {
     $position = array_key_exists($position, $this->objects) ? $position : null;
     $this->position = $position;
   }
 
-  public function current() : AbstractObject|bool {
+  public function current()
+  {
     return isset($this->objects[$this->position])
       ? $this->objects[$this->position]
       : false;
   }
 
-  public function key() : ?int {
+  public function key(): ?int
+  {
     return $this->position;
   }
 
-  public function prev() {
+  public function prev()
+  {
     if ($this->position == $this->getIndexLeft()) {
       if ($this->getUseImplicitFetch()) {
         $this->fetchBefore();
@@ -462,7 +498,8 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess {
     }
   }
 
-  public function next() : void {
+  public function next(): void
+  {
     if ($this->position == $this->getIndexRight()) {
       if ($this->getUseImplicitFetch()) {
         $this->fetchAfter();
@@ -479,11 +516,13 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess {
     }
   }
 
-  public function valid() : bool {
+  public function valid(): bool
+  {
     return isset($this->objects[$this->position]);
   }
 
-  public function count() : int {
+  public function count(): int
+  {
     return count($this->objects);
   }
 
@@ -491,7 +530,8 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess {
    * @param mixed $offset
    * @param mixed $value
    */
-  public function offsetSet($offset, $value) : void {
+  public function offsetSet($offset, $value): void
+  {
     if ($offset === null) {
       $this->objects[] = $value;
     } else {
@@ -503,14 +543,16 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess {
    * @param mixed $offset
    * @return bool
    */
-  public function offsetExists($offset) : bool {
+  public function offsetExists($offset): bool
+  {
     return isset($this->objects[$offset]);
   }
 
   /**
    * @param mixed $offset
    */
-  public function offsetUnset($offset) : void {
+  public function offsetUnset($offset): void
+  {
     unset($this->objects[$offset]);
   }
 
@@ -518,7 +560,8 @@ class Cursor implements \Iterator, \Countable, \ArrayAccess {
    * @param mixed $offset
    * @return mixed
    */
-  public function offsetGet($offset) : mixed {
+  public function offsetGet($offset): mixed
+  {
     return isset($this->objects[$offset]) ? $this->objects[$offset] : null;
   }
 }
